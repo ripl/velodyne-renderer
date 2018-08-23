@@ -20,8 +20,8 @@
 #include <velodyne/velodyne.h>
 #include <hr_common/path_util.h>
 
-#include "lcmtypes/senlcm_velodyne_t.h"
-#include "lcmtypes/senlcm_velodyne_list_t.h"
+#include "lcmtypes/velodyne_t.h"
+#include "lcmtypes/velodyne_list_t.h"
 #include "renderer_velodyne.h"
 
 #define DTOR M_PI/180
@@ -97,7 +97,7 @@ frames_vehicle_pos_local (BotFrames *frames, double pos[3])
 }
 
 static int
-process_velodyne (const senlcm_velodyne_t *v, RendererVelodyne *self)
+process_velodyne (const velodyne_t *v, RendererVelodyne *self)
 {
     g_assert(self);
 
@@ -245,7 +245,7 @@ process_velodyne (const senlcm_velodyne_t *v, RendererVelodyne *self)
 
 static void
 on_velodyne_list (const lcm_recv_buf_t *rbuf, const char *channel,
-                  const senlcm_velodyne_list_t *msg, void *user)
+                  const velodyne_list_t *msg, void *user)
 {
     RendererVelodyne *self = (RendererVelodyne *)user;
 
@@ -265,7 +265,7 @@ on_velodyne_list (const lcm_recv_buf_t *rbuf, const char *channel,
 
 static void
 on_velodyne (const lcm_recv_buf_t *rbuf, const char *channel,
-             const senlcm_velodyne_t *msg, void *user)
+             const velodyne_t *msg, void *user)
 {
     RendererVelodyne *self = (RendererVelodyne *)user;
     g_assert(self);
@@ -551,8 +551,8 @@ renderer_velodyne_new (BotViewer *viewer, BotParam * param, lcm_t *_lcm)
                                     BOT_GTK_PARAM_WIDGET_SLIDER,
                                     0, 1, 0.5, 1.0);
 
-    //senlcm_velodyne_t_subscribe (self->lcm, lcm_channel, on_velodyne, self);
-    senlcm_velodyne_list_t_subscribe (self->lcm, lcm_channel_list, on_velodyne_list, self);
+    //velodyne_t_subscribe (self->lcm, lcm_channel, on_velodyne, self);
+    velodyne_list_t_subscribe (self->lcm, lcm_channel_list, on_velodyne_list, self);
 
     // Subscribe to the POSE message
     bot_core_pose_t_subscribe (self->lcm, "POSE", on_bot_pose, self);
