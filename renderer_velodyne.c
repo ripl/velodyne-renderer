@@ -108,7 +108,7 @@ process_velodyne (const senlcm_velodyne_t *v, RendererVelodyne *self)
     if (v->packet_type == SENLCM_VELODYNE_T_TYPE_DATA_PACKET) {
 
         velodyne_laser_return_collection_t *lrc =
-            velodyne_decode_data_packet(self->calib, v->data, v->datalen, v->utime);
+            velodyne_decode_data_packet_old(self->calib, v->data, v->datalen, v->utime);
 
         int ret = velodyne_collector_push_laser_returns (self->collector, lrc);
 
@@ -160,21 +160,21 @@ process_velodyne (const senlcm_velodyne_t *v, RendererVelodyne *self)
          * ssc_head2tail (x_ls, NULL, x_lr, self->x_vs);
          */
 
-        BotTrans senlcm_velodyne_to_local;
-        bot_frames_get_trans_with_utime (self->frames, "VELODYNE", "local", v->utime, &senlcm_velodyne_to_local);
+        BotTrans velodyne_to_local;
+        bot_frames_get_trans_with_utime (self->frames, "VELODYNE", "local", v->utime, &velodyne_to_local);
 
-        memcpy (state.xyz, senlcm_velodyne_to_local.trans_vec, 3*sizeof(double));
-        bot_quat_to_roll_pitch_yaw (senlcm_velodyne_to_local.rot_quat, state.rph);
+        memcpy (state.xyz, velodyne_to_local.trans_vec, 3*sizeof(double));
+        bot_quat_to_roll_pitch_yaw (velodyne_to_local.rot_quat, state.rph);
 
         // Compute translational velocity
         //
         // v_velodyne = v_bot + r x w
-        BotTrans senlcm_velodyne_to_body;
-        bot_frames_get_trans (self->frames, "VELODYNE", "body", &senlcm_velodyne_to_body);
+        BotTrans velodyne_to_body;
+        bot_frames_get_trans (self->frames, "VELODYNE", "body", &velodyne_to_body);
 
         double v_velodyne[3];
         double r_body_to_velodyne_local[3];
-        bot_quat_rotate_to (self->bot_pose_last->orientation, senlcm_velodyne_to_body.trans_vec, r_body_to_velodyne_local);
+        bot_quat_rotate_to (self->bot_pose_last->orientation, velodyne_to_body.trans_vec, r_body_to_velodyne_local);
 
         // vel_rot = r x w
         double vel_rot[3];
@@ -348,6 +348,8 @@ renderer_velodyne_draw (BotViewer *viewer, BotRenderer *renderer)
             fprintf (stderr, "Error getting bot_frames transformation from VELODYNE to local!\n");
             return;
             }*/
+
+        fprintf( stdout, "sensor_to_local=%.2f\n", sensor_to_local[11] );
 
         glPushAttrib (GL_DEPTH_BUFFER_BIT | GL_POINT_BIT | GL_CURRENT_BIT);
         glEnable (GL_DEPTH_TEST);
