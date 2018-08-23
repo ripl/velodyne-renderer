@@ -108,7 +108,7 @@ process_velodyne (const senlcm_velodyne_t *v, RendererVelodyne *self)
     if (v->packet_type == SENLCM_VELODYNE_T_TYPE_DATA_PACKET) {
 
         velodyne_laser_return_collection_t *lrc =
-            velodyne_decode_data_packet_old(self->calib, v->data, v->datalen, v->utime);
+            velodyne_decode_data_packet(self->calib, v->data, v->datalen, v->utime);
 
         int ret = velodyne_collector_push_laser_returns (self->collector, lrc);
 
@@ -348,8 +348,6 @@ renderer_velodyne_draw (BotViewer *viewer, BotRenderer *renderer)
             fprintf (stderr, "Error getting bot_frames transformation from VELODYNE to local!\n");
             return;
             }*/
-
-        fprintf( stdout, "sensor_to_local=%.2f\n", sensor_to_local[11] );
 
         glPushAttrib (GL_DEPTH_BUFFER_BIT | GL_POINT_BIT | GL_CURRENT_BIT);
         glEnable (GL_DEPTH_TEST);
