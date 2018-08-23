@@ -20,8 +20,8 @@
 #include <velodyne/velodyne.h>
 #include <hr_common/path_util.h>
 
-#include "lcmtypes/velodyne_t.h"
-#include "lcmtypes/velodyne_list_t.h"
+#include "lcmtypes/senlcm_velodyne_t.h"
+#include "lcmtypes/senlcm_velodyne_list_t.h"
 #include "renderer_velodyne.h"
 
 #define DTOR M_PI/180
@@ -97,7 +97,7 @@ frames_vehicle_pos_local (BotFrames *frames, double pos[3])
 }
 
 static int
-process_velodyne (const velodyne_t *v, RendererVelodyne *self)
+process_velodyne (const senlcm_velodyne_t *v, RendererVelodyne *self)
 {
     g_assert(self);
 
@@ -160,21 +160,21 @@ process_velodyne (const velodyne_t *v, RendererVelodyne *self)
          * ssc_head2tail (x_ls, NULL, x_lr, self->x_vs);
          */
 
-        BotTrans velodyne_to_local;
-        bot_frames_get_trans_with_utime (self->frames, "VELODYNE", "local", v->utime, &velodyne_to_local);
+        BotTrans senlcm_velodyne_to_local;
+        bot_frames_get_trans_with_utime (self->frames, "VELODYNE", "local", v->utime, &senlcm_velodyne_to_local);
 
-        memcpy (state.xyz, velodyne_to_local.trans_vec, 3*sizeof(double));
-        bot_quat_to_roll_pitch_yaw (velodyne_to_local.rot_quat, state.rph);
+        memcpy (state.xyz, senlcm_velodyne_to_local.trans_vec, 3*sizeof(double));
+        bot_quat_to_roll_pitch_yaw (senlcm_velodyne_to_local.rot_quat, state.rph);
 
         // Compute translational velocity
         //
         // v_velodyne = v_bot + r x w
-        BotTrans velodyne_to_body;
-        bot_frames_get_trans (self->frames, "VELODYNE", "body", &velodyne_to_body);
+        BotTrans senlcm_velodyne_to_body;
+        bot_frames_get_trans (self->frames, "VELODYNE", "body", &senlcm_velodyne_to_body);
 
         double v_velodyne[3];
         double r_body_to_velodyne_local[3];
-        bot_quat_rotate_to (self->bot_pose_last->orientation, velodyne_to_body.trans_vec, r_body_to_velodyne_local);
+        bot_quat_rotate_to (self->bot_pose_last->orientation, senlcm_velodyne_to_body.trans_vec, r_body_to_velodyne_local);
 
         // vel_rot = r x w
         double vel_rot[3];
@@ -245,7 +245,7 @@ process_velodyne (const velodyne_t *v, RendererVelodyne *self)
 
 static void
 on_velodyne_list (const lcm_recv_buf_t *rbuf, const char *channel,
-                  const velodyne_list_t *msg, void *user)
+                  const senlcm_velodyne_list_t *msg, void *user)
 {
     RendererVelodyne *self = (RendererVelodyne *)user;
 
@@ -265,7 +265,7 @@ on_velodyne_list (const lcm_recv_buf_t *rbuf, const char *channel,
 
 static void
 on_velodyne (const lcm_recv_buf_t *rbuf, const char *channel,
-             const velodyne_t *msg, void *user)
+             const senlcm_velodyne_t *msg, void *user)
 {
     RendererVelodyne *self = (RendererVelodyne *)user;
     g_assert(self);
@@ -551,8 +551,8 @@ renderer_velodyne_new (BotViewer *viewer, BotParam * param, lcm_t *_lcm)
                                     BOT_GTK_PARAM_WIDGET_SLIDER,
                                     0, 1, 0.5, 1.0);
 
-    //velodyne_t_subscribe (self->lcm, lcm_channel, on_velodyne, self);
-    velodyne_list_t_subscribe (self->lcm, lcm_channel_list, on_velodyne_list, self);
+    //senlcm_velodyne_t_subscribe (self->lcm, lcm_channel, on_velodyne, self);
+    senlcm_velodyne_list_t_subscribe (self->lcm, lcm_channel_list, on_velodyne_list, self);
 
     // Subscribe to the POSE message
     bot_core_pose_t_subscribe (self->lcm, "POSE", on_bot_pose, self);
