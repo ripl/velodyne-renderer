@@ -6,7 +6,7 @@
 
 #include <bot_param/param_client.h>
 #include <bot_param/param_util.h>
-#include <hr_common/path_util.h>
+#include <path_utils/path_util.h>
 #include "renderer_velodyne.h"
 
 typedef struct {
