@@ -3,7 +3,7 @@ add_definitions(-std=gnu99)
 
 add_library(velodyne-renderer SHARED renderer_velodyne.c)
 
-set(REQUIRED_LIBS velodyne bot2-core bot2-vis bot2-frames bot2-param-client hr-path-util)
+set(REQUIRED_LIBS velodyne bot2-core bot2-vis bot2-frames bot2-param-client path-utils)
 pods_use_pkg_config_packages(velodyne-renderer ${REQUIRED_LIBS})
 
 target_link_libraries(velodyne-renderer
