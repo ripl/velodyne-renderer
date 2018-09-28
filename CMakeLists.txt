@@ -1,46 +1,23 @@
-# Create a shared library libhello.so with a single source file
-add_definitions(-std=gnu99)
+cmake_minimum_required(VERSION 2.6.0)
 
-add_library(velodyne-renderer SHARED renderer_velodyne.c)
+# pull in the pods macros. See cmake/pods.cmake for documentation
+set(POD_NAME velodyne-renderer)
+include(cmake/pods.cmake)
 
-set(REQUIRED_LIBS velodyne bot2-core bot2-vis bot2-frames bot2-param-client path-utils)
-pods_use_pkg_config_packages(velodyne-renderer ${REQUIRED_LIBS})
+# Necessary to build on OSX
+find_package(OpenGL REQUIRED)
 
-target_link_libraries(velodyne-renderer
-    ${OPENGL_LIBRARIES}
-    ${LCMTYPES_LIBS})
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GLIB2 REQUIRED glib-2.0)
+pkg_check_modules(LCM REQUIRED lcm)
+pkg_check_modules(BOT2_VIS REQUIRED bot2-vis)
 
-# set the library API version.  Increment this every time the public API
-# changes.
-set_target_properties(velodyne-renderer PROPERTIES SOVERSION 1)
+if(NOT BOT2_VIS_FOUND)
+    message("\n\n")
+    message("bot2-vis not found.  Not building rrtstar renderer")
+    message("\n")
+    return()
+endif()
 
-# make the header public
-# install it to include/velodyne
-pods_install_headers(renderer_velodyne.h DESTINATION velodyne)
 
-# make the library public
-pods_install_libraries(velodyne-renderer)
-
-# create a pkg-config file for the library, to make it for other software to
-# use it.
-# Velodyne Driver
-
-pods_install_pkg_config_file(velodyne-renderer
-    CFLAGS
-    LIBS -lvelodyne-renderer
-    REQUIRES ${REQUIRED_LIBS}
-    VERSION 0.0.1)
-
-add_executable(velodyne-viewer main.c)
-
-pods_use_pkg_config_packages (velodyne-viewer
-    bot2-core
-    bot2-param-client
-    velodyne-renderer
-    glib-2.0
-    bot2-vis
-    bot2-frames
-    lcm
-    )
-
-pods_install_executables(velodyne-viewer)
+add_subdirectory(src)
